@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -7,11 +8,12 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lab 2 - Login Page',
+      title: 'Week-4 - Login Page',
       theme: ThemeData(
 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -33,6 +35,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final storage = FlutterSecureStorage();
+
   late TextEditingController _loginController;
   late TextEditingController _passwordController;
   String imageSource = "images/question-mark.png";// initial image
@@ -42,13 +46,62 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _loginController = TextEditingController();
     _passwordController = TextEditingController();
+
+    _loadSavedCredentials();
   }
 
+  Future<void> _loadSavedCredentials() async {
+    String? savedLogin = await storage.read(key: "username");
+    String? savedPassword = await storage.read(key: "password");
+
+    if (savedLogin != null && savedPassword != null) {
+      _loginController.text = savedLogin;
+      _passwordController.text = savedPassword;
+
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Previous login data loaded.")),
+        );
+      });
+    }
+  }
   @override
   void dispose() {
     _loginController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showSaveDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Save Login Info?"),
+          content: const Text("Would you like to save your login name and password?"),
+          actions: [
+            TextButton(
+              child: const Text("No"),
+              onPressed: () async {
+
+                await storage.deleteAll();
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("Yes"),
+              onPressed: () async {
+
+                await storage.write(key: "username", value: _loginController.text);
+                await storage.write(key: "password", value: _passwordController.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _checkPassword() {
@@ -60,6 +113,7 @@ class _LoginPageState extends State<LoginPage> {
         imageSource = "images/stop.png";
       }
     });
+    _showSaveDialog();
   }
 
   @override
@@ -99,12 +153,12 @@ class _LoginPageState extends State<LoginPage> {
               ElevatedButton(
                 onPressed: _checkPassword,
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.blue// 👈 sets the text color
+                    foregroundColor: Colors.blue// 👈 sets the text color
                 ),
                 child: const Text(
-                    "Login",
+                  "Login",
                   style: TextStyle(fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
 
