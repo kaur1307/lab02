@@ -22,13 +22,7 @@ The goal of Lab 2 is to create a **Login Page** with:
   - Changes to a **light bulb** if the password is `"QWERTY123"`
   - Changes to a **stop sign** for any incorrect password
 
----
 
-## 📸 Screenshot
-
-*(You can add a screenshot here when the app is running)*
-
----
 
 ## 📁 Assets Used
 
